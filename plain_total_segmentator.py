@@ -5,6 +5,7 @@ import pydicom
 from totalsegmentator.python_api import totalsegmentator
 from pathlib import Path
 import time
+import matplotlib.pyplot as plt
 
 def compute_totalsegmentator_segmentations():
     """
@@ -56,4 +57,15 @@ if __name__ == "__main__":
     # dicom2nifti.convert_directory(dicom_ct, ".")
     
     nifti = nib.load("input_ct_segmentations.nii.gz")
-    compute_totalsegmentator_segmentations()
+    fig, axis = plt.subplots(3, 3, figsize=(20, 10))
+
+    lung_ct = nifti.get_fdata()
+
+    plt.figure(figsize=(20,10))
+    for i in range (9):
+        plt.subplot(3,3,i+1)
+        plt.imshow(lung_ct[:,:,i], cmap="gray")
+    plt.show()
+    plt.tight_layout()
+    
+    #compute_totalsegmentator_segmentations()

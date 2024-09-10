@@ -1,6 +1,7 @@
 Slicer
 DICOMData
 billeder
+Slicer billeder
 
 #alle nifti filer
 *.nii.gz
