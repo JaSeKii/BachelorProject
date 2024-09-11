@@ -4,7 +4,7 @@ from pathlib import Path
 import SimpleITK as sitk
 import matplotlib.pyplot as plt
 import dicom2nifti
-import pyvista as pv
+#import pyvista as pv
 
 from vtkmodules.util.numpy_support import numpy_to_vtk
 from vtkmodules.util.numpy_support import vtk_to_numpy
@@ -203,9 +203,11 @@ def read_an_image_change_in_numpy_and_save_again():
     sitk.WriteImage(img_o, ct_proc_out)
 
 if __name__ == '__main__':
-    ct_name  = '4_lung_15.nii.gz'
-    Segmentations = 'input_ct_segmentations.nii.gz'
+    ct_name  = '/home/s214596/Bachelor project/BachelorProject/4_lung_15.nii.gz'
+    Segmentations = '/home/s214596/Bachelor project/BachelorProject/ct_segmentations.nii.gz'
+    lung_vessels = '/home/s214596/Bachelor project/BachelorProject/lung_vessels.nii.gz'
 
+    #load ct file
     img = sitk.ReadImage(ct_name)
     img_t = sitk.GetArrayFromImage(img)
     img_np = img_t.transpose(2, 1, 0)
@@ -216,11 +218,20 @@ if __name__ == '__main__':
     seg_t = sitk.GetArrayFromImage(seg)
     seg_np = seg_t.transpose(2, 1, 0)
     seg_np = np.isin(seg_np,np.array([10,11,12,13,14])).astype(int)
-    #heatmap2d(img_np[...,100])
+    
+    #load lung vessel segmentation
+    lung_seg = sitk.ReadImage(lung_vessels)
+    lung_seg_t = sitk.GetArrayFromImage(lung_seg)
+    lung_seg_np = lung_seg_t.transpose(2,1,0)
 
-    result = np.multiply(img_np,seg_np)
 
-    img_o_np = result.transpose(2, 1, 0)
+    result_lung = np.multiply(img_np,seg_np)
+    result_lung_no_vessels = np.multiply(result_lung,lung_seg_np)
+
+    plt.hist(result_lung_no_vessels.ravel(),bins='auto')
+    plt.show()
+
+    img_o_np = result_lung_no_vessels.transpose(2, 1, 0)
 
     img_o = sitk.GetImageFromArray(img_o_np)
     # Copy essential image information from the original ct scan (spacing, origin, directions and so on)

@@ -1,6 +1,7 @@
 import os
-import dicom2nifti
-import nibabel as nib
+#import dicom2nifti
+import SimpleITK as sitk
+#import nibabel as nib
 import pydicom
 from totalsegmentator.python_api import totalsegmentator
 from pathlib import Path
@@ -11,10 +12,10 @@ def compute_totalsegmentator_segmentations():
     """
     Use TotalSegmentator to compute segmentations
     """
-    input_file = "C:/Users/jacob/OneDrive/Uni/7. Semester/Bachelor/4_lung_15.nii.gz"
+    input_file = "/home/s214596/Bachelor project/4_lung_15.nii.gz"
 
     # Actually just a file name, not a directory (since we pack all segmentations in one file)
-    output_dir = "C:/Users/jacob/OneDrive/Uni/7. Semester/Bachelor/input_ct_segmentations.nii.gz"
+    output_dir = "/home/s214596/Bachelor project/BachelorProject/ct_segmentation_total.nii.gz"
 
     if not os.path.exists(input_file):
         print(f"Could not find {input_file}")
@@ -26,10 +27,10 @@ def compute_totalsegmentator_segmentations():
     # Nr of threads for saving segmentations
     nr_thr_saving = 1
     # Run faster lower resolution model
-    fast_model = True
+    fast_model = False
 
     # Look at the TotalSegmentator documentation for more information on the tasks
-    task = "total"
+    task = "lung_vessels"
 
     # Calc volume (in mm3) and mean intensity. Results will be in statistics.json
     calc_statistics = False
@@ -53,19 +54,12 @@ def compute_totalsegmentator_segmentations():
 
 
 if __name__ == "__main__":
-    # dicom_ct = Path("/Users/jacob/OneDrive/Uni/7. Semester/Bachelor/DICOMData/Subject (1)")
-    # dicom2nifti.convert_directory(dicom_ct, ".")
-    
-    nifti = nib.load("input_ct_segmentations.nii.gz")
-    fig, axis = plt.subplots(3, 3, figsize=(20, 10))
+    #dir_dicom = Path("/home/s214596/Bachelor project/BachelorProject/Subject (1)")
+    #dicom2nifti.convert_directory(dicom_ct, ".")
 
-    lung_ct = nifti.get_fdata()
-
-    plt.figure(figsize=(20,10))
-    for i in range (9):
-        plt.subplot(3,3,i+1)
-        plt.imshow(lung_ct[:,:,i], cmap="gray")
-    plt.show()
-    plt.tight_layout()
     
-    #compute_totalsegmentator_segmentations()
+    
+    #nifti = nib.load("input_ct_segmentations.nii.gz")
+    
+    
+    compute_totalsegmentator_segmentations()
