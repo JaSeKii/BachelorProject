@@ -207,6 +207,10 @@ if __name__ == '__main__':
     Segmentations = '/home/s214596/Bachelor project/BachelorProject/ct_segmentations.nii.gz'
     lung_vessels = '/home/s214596/Bachelor project/BachelorProject/lung_vessels.nii.gz'
 
+    ct_name = "/Users/jacob/OneDrive/Uni/7. Semester/Bachelor/4_lung_15.nii.gz"
+    Segmentations = '/Users/jacob/OneDrive/Uni/7. Semester/Bachelor/ct_segmentations.nii.gz'
+    lung_vessels = '/Users/jacob/OneDrive/Uni/7. Semester/Bachelor/lung_vessels.nii.gz'
+
     #load ct file
     img = sitk.ReadImage(ct_name)
     img_t = sitk.GetArrayFromImage(img)
@@ -223,12 +227,16 @@ if __name__ == '__main__':
     lung_seg = sitk.ReadImage(lung_vessels)
     lung_seg_t = sitk.GetArrayFromImage(lung_seg)
     lung_seg_np = lung_seg_t.transpose(2,1,0)
+    lung_seg_np = np.where(lung_seg_np > 0,0,1)
 
 
     result_lung = np.multiply(img_np,seg_np)
     result_lung_no_vessels = np.multiply(result_lung,lung_seg_np)
+    
+    attenuation = result_lung_no_vessels.ravel()
+    attenuation = attenuation[attenuation != 0]
 
-    plt.hist(result_lung_no_vessels.ravel(),bins='auto')
+    plt.hist(attenuation,bins='auto')
     plt.show()
 
     img_o_np = result_lung_no_vessels.transpose(2, 1, 0)

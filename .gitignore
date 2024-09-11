@@ -3,5 +3,7 @@ DICOMData
 billeder
 Slicer billeder
 
-#alle nifti filer
+#forbudte filtyper
 *.nii.gz
+*.vtk
+*.png
