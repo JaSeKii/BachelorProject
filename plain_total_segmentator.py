@@ -12,10 +12,10 @@ def compute_totalsegmentator_segmentations():
     """
     Use TotalSegmentator to compute segmentations
     """
-    input_file = "/home/s214596/Bachelor project/4_lung_15.nii.gz"
+    input_file = "C:/Users/jacob/OneDrive/Uni/7. Semester/Bachelor/4_lung_15.nii.gz"
 
     # Actually just a file name, not a directory (since we pack all segmentations in one file)
-    output_dir = "/home/s214596/Bachelor project/BachelorProject/ct_segmentation_total.nii.gz"
+    output_dir = "C:/Users/jacob/OneDrive/Uni/7. Semester/Bachelor/ct_segmentation_total.nii.gz"
 
     if not os.path.exists(input_file):
         print(f"Could not find {input_file}")
@@ -27,10 +27,10 @@ def compute_totalsegmentator_segmentations():
     # Nr of threads for saving segmentations
     nr_thr_saving = 1
     # Run faster lower resolution model
-    fast_model = False
+    fast_model = True
 
     # Look at the TotalSegmentator documentation for more information on the tasks
-    task = "lung_vessels"
+    task = "total"
 
     # Calc volume (in mm3) and mean intensity. Results will be in statistics.json
     calc_statistics = False
@@ -58,7 +58,8 @@ if __name__ == "__main__":
     #dicom2nifti.convert_directory(dicom_ct, ".")
 
     
-    
+    import torch
+    print(torch.cuda.is_available())
     #nifti = nib.load("input_ct_segmentations.nii.gz")
     
     
