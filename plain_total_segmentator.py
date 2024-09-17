@@ -13,9 +13,11 @@ def compute_totalsegmentator_segmentations():
     Use TotalSegmentator to compute segmentations
     """
     input_file = "C:/Users/jacob/OneDrive/Uni/7. Semester/Bachelor/4_lung_15.nii.gz"
+    input_file = "/home/s214596/Bachelor project/BachelorProject/4_lung_15.nii.gz"
 
     # Actually just a file name, not a directory (since we pack all segmentations in one file)
     output_dir = "C:/Users/jacob/OneDrive/Uni/7. Semester/Bachelor/ct_segmentation_total.nii.gz"
+    output_dir = "/home/s214596/Bachelor project/BachelorProject/Data_preprocess/test.nii.gz"
 
     if not os.path.exists(input_file):
         print(f"Could not find {input_file}")

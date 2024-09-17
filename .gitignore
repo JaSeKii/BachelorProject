@@ -1,5 +1,6 @@
 Slicer
 DICOMData
+Subject (1)
 billeder
 Slicer billeder
 
@@ -7,3 +8,5 @@ Slicer billeder
 *.nii.gz
 *.vtk
 *.png
+
+__pycache__/
