@@ -8,5 +8,6 @@ Slicer billeder
 *.nii.gz
 *.vtk
 *.png
+*.npy
 
 __pycache__/
