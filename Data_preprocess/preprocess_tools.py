@@ -22,9 +22,7 @@ def get_segmentations(input_file_path, output_path, task="total", fast=True):
     task: what type of segmentation (total, lung_vessels, ...) see documentation on github
     '''
 
-
-    input_file = "/Users/jacob/OneDrive/Uni/7. Semester/Bachelor/4_lung_15.nii.gz"
-    input_file = "/home/s214596/Bachelor project/BachelorProject/4_lung_15.nii.gz"
+    input_file = input_file_path
     output_dir = output_path
     
     if not os.path.exists(input_file):
