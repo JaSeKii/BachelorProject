@@ -83,6 +83,21 @@ def convert_numpy_to_nifti_and_save(np_file, output_path, original_nifti_path):
 
     print(f"saving")
     sitk.WriteImage(img_o, output_path)
+    
+def segment_lungs_with_vessels(ct_img, lung_seg):
+    '''
+    given the ct image and total segmentation as arrays:
+
+    output: array of lungs with vessels 
+    '''
+
+    # Preprocess the segmentations to binary in order to multiply them with the ct array.
+    lung_seg = np.isin(lung_seg,np.array([10,11,12,13,14])).astype(int) #lung segment numbers is  [10:14]
+    vessel_seg = np.where(vessel_seg > 0,0,1)
+
+    # multiply the ct image with the lung segmentation, to isolate the lungs
+    result_lung = np.multiply(ct_img,lung_seg)
+    return result_lung
 
 def segment_lungs_without_vessels(ct_img, lung_seg, vessel_seg):
     '''
