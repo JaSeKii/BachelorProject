@@ -3,11 +3,12 @@ Functions for preprocessing and segmentation nifti images
 '''
 
 import os
-import vtk
+#import vtk
 import numpy as np
 import matplotlib.pyplot as plt
 import SimpleITK as sitk
 import seaborn as sns
+import json
 from totalsegmentator.python_api import totalsegmentator
 
 
@@ -57,8 +58,9 @@ def get_segmentations(input_file_path, output_path, task="total", fast=True):
                      fast_model, nora_tag="None", preview=False, task=task, roi_subset=None,
                      statistics=calc_statistics, radiomics=calc_radiomics, crop_path=None, body_seg=body_seg,
                      force_split=force_split, output_type="nifti", quiet=run_quit, verbose=verbose, test=False)
-
     return True
+
+
 
 def load_nifti_convert_to_numpy(input_path, state_shape=False):
     '''
@@ -73,6 +75,8 @@ def load_nifti_convert_to_numpy(input_path, state_shape=False):
         print(f"Numpy image shape {img_np.shape}")
     return img_np
 
+
+
 def convert_numpy_to_nifti_and_save(np_file, output_path, original_nifti_path):
     img = sitk.ReadImage(original_nifti_path)
     img_o_np = np_file.transpose(2, 1, 0)
@@ -84,6 +88,8 @@ def convert_numpy_to_nifti_and_save(np_file, output_path, original_nifti_path):
     print(f"saving")
     sitk.WriteImage(img_o, output_path)
     
+
+
 def segment_lungs_with_vessels(ct_img, lung_seg):
     '''
     given the ct image and total segmentation as arrays:
@@ -97,6 +103,8 @@ def segment_lungs_with_vessels(ct_img, lung_seg):
     # multiply the ct image with the lung segmentation, to isolate the lungs
     result_lung = np.multiply(ct_img,lung_seg)
     return result_lung
+
+
 
 def segment_lungs_without_vessels(ct_img, lung_seg, vessel_seg):
     '''
@@ -120,10 +128,24 @@ def segment_lungs_without_vessels(ct_img, lung_seg, vessel_seg):
     attenuation = attenuation[attenuation != 0]
     return result_lung_no_vessels, attenuation
 
-def density_plot(attenuation):
-    sns.set_style('whitegrid')
-    sns.displot(attenuation)
-    plt.show()
+
+
+def extract_dataset_from_collection(whitelist_file_path, path_to_dataset):
+    '''
+    given a path to a json file containing the relevant nifti filenames, and a path to the raw dataset
+
+    extract filenames of the whitelisted nifti files from the dataset
+    '''
+    filtered_dataset = []
+    with open(whitelist_file_path, 'r') as json_file:
+        whitelist = json.load(json_file)
+    whitelist_filenames = [fn['filepath'] for fn in whitelist.values()]
+    for patient_id in os.listdir(path_to_dataset):
+        if patient_id[0:28] in whitelist_filenames and os.path.isfile(os.path.join(path_to_dataset, patient_id)):
+            filtered_dataset.append(patient_id[0:28] + '.nii.gz')
+    return filtered_dataset
+
+
 
 if __name__ == "__main__":
     #compute_totalsegmentator_segmentations()

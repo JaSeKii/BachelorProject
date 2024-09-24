@@ -3,6 +3,8 @@ DICOMData
 Subject (1)
 billeder
 Slicer billeder
+Attenuation
+Segmentations
 
 #forbudte filtyper
 *.nii.gz
