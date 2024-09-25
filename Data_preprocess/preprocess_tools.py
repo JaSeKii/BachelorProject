@@ -16,9 +16,9 @@ def get_segmentations(input_file_path, output_path, task="total", fast=True):
     '''
     Get segmentations using TotalSegmentator.
 
-    input: path to input nifti file
+    input: path to input nifti file, path to folder for segmentations
 
-    output: path to folder for segmentations
+    output: 
 
     task: what type of segmentation (total, lung_vessels, ...) see documentation on github
     '''
@@ -60,15 +60,54 @@ def get_segmentations(input_file_path, output_path, task="total", fast=True):
                      force_split=force_split, output_type="nifti", quiet=run_quit, verbose=verbose, test=False)
     return True
 
+def resample_image(im_path : str, interpolator = sitk.sitkLinear, new_spacing = [0.5]*3) -> sitk.Image:
+
+    """
+    The function reads and resamples an image to have a given voxel. 
+
+    Input: 
+
+        im_path:        The path to the image that needs resampling 
+
+        intepolator:    The intepolator for the resampling, default is linear
+
+        new_spacing:    The new voxel, default is (0.5, 0.5, 0.5)
+
+    Output: 
+
+        A resampled image represented as a 3D array
+
+    """
+
+    # load image 
+    im = sitk.ReadImage(im_path, sitk.sitkInt32) 
+
+    # calculate new size of resampled image 
+    original_spacing = im.GetSpacing()
+    original_size = im.GetSize()
+    new_size = [int(round(osz*ospc/nspc)) for osz,ospc,nspc in zip(original_size, original_spacing, new_spacing)]
+    # resample 
+    return sitk.Resample(im, new_size, 
+                         transform = sitk.Transform(), 
+                         interpolator = interpolator, 
+                         outputOrigin = im.GetOrigin(), 
+                         outputSpacing = new_spacing, 
+                         outputDirection = im.GetDirection(), 
+                         defaultPixelValue = 0, 
+                         outputPixelType = im.GetPixelID())
 
 
-def load_nifti_convert_to_numpy(input_path, state_shape=False):
+
+def load_nifti_convert_to_numpy(input_path, state_shape=False, resample = True):
     '''
     input: path to nifti file
 
     output: numpy array of image
     '''
-    img = sitk.ReadImage(input_path)
+    if resample:
+        img = resample_image(input_path)
+    else:
+        img = sitk.ReadImage(input_path)
     img_t = sitk.GetArrayFromImage(img)
     img_np = img_t.transpose(2, 1, 0)
     if state_shape:
@@ -87,6 +126,7 @@ def convert_numpy_to_nifti_and_save(np_file, output_path, original_nifti_path):
 
     print(f"saving")
     sitk.WriteImage(img_o, output_path)
+
     
 
 
@@ -102,7 +142,10 @@ def segment_lungs_with_vessels(ct_img, lung_seg):
 
     # multiply the ct image with the lung segmentation, to isolate the lungs
     result_lung = np.multiply(ct_img,lung_seg)
-    return result_lung
+    # remove all ct values equal to 0
+    attenuation = result_lung.ravel()
+    attenuation = attenuation[attenuation != 0]
+    return result_lung, attenuation
 
 
 
