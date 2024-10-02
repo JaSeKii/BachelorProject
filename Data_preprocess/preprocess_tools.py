@@ -80,7 +80,7 @@ def resample_image(im_path : str, interpolator = sitk.sitkLinear, new_spacing = 
     """
 
     # load image 
-    im = sitk.ReadImage(im_path, sitk.sitkInt32) 
+    im = sitk.ReadImage(im_path) 
 
     # calculate new size of resampled image 
     original_spacing = im.GetSpacing()
@@ -98,16 +98,14 @@ def resample_image(im_path : str, interpolator = sitk.sitkLinear, new_spacing = 
 
 
 
-def load_nifti_convert_to_numpy(input_path, state_shape=False, resample = True):
+def load_nifti_convert_to_numpy(input_path, state_shape=False):
     '''
     input: path to nifti file
 
     output: numpy array of image
     '''
-    if resample:
-        img = resample_image(input_path)
-    else:
-        img = sitk.ReadImage(input_path)
+    
+    img = sitk.ReadImage(input_path)
     img_t = sitk.GetArrayFromImage(img)
     img_np = img_t.transpose(2, 1, 0)
     if state_shape:
@@ -130,7 +128,7 @@ def convert_numpy_to_nifti_and_save(np_file, output_path, original_nifti_path):
     
 
 
-def segment_lungs_with_vessels(ct_img, lung_seg):
+def segment_lungs_with_vessels(ct_img, total_seg):
     '''
     given the ct image and total segmentation as arrays:
 
@@ -138,18 +136,18 @@ def segment_lungs_with_vessels(ct_img, lung_seg):
     '''
 
     # Preprocess the segmentations to binary in order to multiply them with the ct array.
-    lung_seg = np.isin(lung_seg,np.array([10,11,12,13,14])).astype(int) #lung segment numbers is  [10:14]
-
+    lung_seg = np.isin(total_seg,np.array([10,11,12,13,14])).astype(int) #lung segment numbers is  [10:14]
     # multiply the ct image with the lung segmentation, to isolate the lungs
-    result_lung = np.multiply(ct_img,lung_seg)
+    #lung_seg = np.where(lung_seg==0,np.nan,1) 
+    result_lung = np.where(lung_seg==1,ct_img,-10000)
     # remove all ct values equal to 0
     attenuation = result_lung.ravel()
-    attenuation = attenuation[attenuation != 0]
+    attenuation = attenuation[attenuation != -10000]
     return result_lung, attenuation
 
 
 
-def segment_lungs_without_vessels(ct_img, lung_seg, vessel_seg):
+def segment_lungs_without_vessels(ct_img, total_seg, vessel_seg):
     '''
     given the ct image, total segmentation and lung vessel segmentation as arrays:
 
@@ -157,18 +155,20 @@ def segment_lungs_without_vessels(ct_img, lung_seg, vessel_seg):
     '''
 
     # Preprocess the segmentations to binary in order to multiply them with the ct array.
-    lung_seg = np.isin(lung_seg,np.array([10,11,12,13,14])).astype(int) #lung segment numbers is  [10:14]
+    lung_seg = np.isin(total_seg,np.array([10,11,12,13,14])).astype(int) #lung segment numbers is  [10:14]
     vessel_seg = np.where(vessel_seg > 0,0,1)
 
     # multiply the ct image with the lung segmentation, to isolate the lungs
+    lung_seg = np.where(lung_seg==0,np.nan,1) 
     result_lung = np.multiply(ct_img,lung_seg)
+    result_lung = np.where(np.isnan(result_lung),-10000,result_lung)
 
     #multiply the isolated lung ct with the lung vessel segmentation to remove the vessels from the ct.
-    result_lung_no_vessels = np.multiply(result_lung,vessel_seg)
+    result_lung_no_vessels = np.where(vessel_seg==1,np.multiply(result_lung,vessel_seg),-10000)
 
     # remove all ct values equal to 0
     attenuation = result_lung_no_vessels.ravel()
-    attenuation = attenuation[attenuation != 0]
+    attenuation = attenuation[attenuation != -10000]
     return result_lung_no_vessels, attenuation
 
 
