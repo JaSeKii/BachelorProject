@@ -65,9 +65,9 @@ if __name__ == "__main__":
             get_segmentations(input_file_path=input_path_Dataset_resampled + patient,
                                 output_path=output_path_segmentations + f'total_seg_{patient}',
                                 task='total', fast=fast)
-            get_segmentations(input_file_path=input_path_Dataset_resampled + patient,
-                                output_path=output_path_segmentations + f'vessel_seg_{patient}',
-                                task='lung_vessels', fast=fast)
+            # get_segmentations(input_file_path=input_path_Dataset_resampled + patient,
+            #                     output_path=output_path_segmentations + f'vessel_seg_{patient}',
+            #                     task='lung_vessels', fast=fast)
             # get_segmentations(input_file_path=input_path_Dataset + patient,
             #                     output_path=output_path_segmentations + f'pleural_effusion_seg_{patient}',
             #                     task='pleural_pericard_effusion', fast=fast)
@@ -78,20 +78,20 @@ if __name__ == "__main__":
         # convert nifti files to numpy arrays in order to process them.
         ct_as_np = load_nifti_convert_to_numpy(input_path=input_path_Dataset+patient)
         lung_seg_as_np = load_nifti_convert_to_numpy(input_path=input_path_segmentations+f'total_seg_{patient}')
-        vessel_seg_as_np = load_nifti_convert_to_numpy(input_path=input_path_segmentations+f'vessel_seg_{patient}')
+        #vessel_seg_as_np = load_nifti_convert_to_numpy(input_path=input_path_segmentations+f'vessel_seg_{patient}')
         
         # extract CT of the lungs with lung vessels.
         lung_w_vessels, attenuation_of_lungs = segment_lungs_with_vessels(ct_as_np, lung_seg_as_np)
 
         # extract CT of the lungs without the lung vessels, and the attenuation of the lungs (w.o. vessels)
-        lungs_wo_vessels, attenuation_of_lungs_wo_vessels = segment_lungs_without_vessels(ct_as_np, lung_seg_as_np, vessel_seg_as_np)
+        #lungs_wo_vessels, attenuation_of_lungs_wo_vessels = segment_lungs_without_vessels(ct_as_np, lung_seg_as_np, vessel_seg_as_np)
         
         #convert the processed arrays back to nifti and save to scratch directory. 
-        convert_numpy_to_nifti_and_save(lung_w_vessels,output_path_lung+ f'{patient_name}.nii.gz',input_path_Dataset+patient)
-        convert_numpy_to_nifti_and_save(lungs_wo_vessels,output_path=output_path_lung_wo_vessel+f'wo_vessels_{patient_name}.nii.gz',original_nifti_path=input_path_Dataset+patient)
+        convert_numpy_to_nifti_and_save(lung_w_vessels,output_path_lung+ f'lung_ct{patient_name}.nii.gz',input_path_Dataset+patient)
+        #convert_numpy_to_nifti_and_save(lungs_wo_vessels,output_path=output_path_lung_wo_vessel+f'lung_ct_wo_vessels{patient_name}.nii.gz',original_nifti_path=input_path_Dataset+patient)
 
-        np.save(output_path_lung_wov_attenuation+f'attenuation_lung_{patient_name}.npy', attenuation_of_lungs)
-        np.save(output_path_lung_wov_attenuation+f'attenuation_no_ves_lung_{patient_name}.npy', attenuation_of_lungs_wo_vessels)
+        #np.save(output_path_lung_wov_attenuation+f'attenuation_lung_{patient_name}.npy', attenuation_of_lungs)
+        #np.save(output_path_lung_wov_attenuation+f'attenuation_no_ves_lung_{patient_name}.npy', attenuation_of_lungs_wo_vessels)
     # dataset directory : /scratch/s214596/Dataset
 
 
