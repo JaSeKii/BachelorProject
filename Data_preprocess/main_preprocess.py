@@ -87,8 +87,8 @@ if __name__ == "__main__":
         lungs_wo_vessels, attenuation_of_lungs_wo_vessels = segment_lungs_without_vessels(ct_as_np, lung_seg_as_np, vessel_seg_as_np)
         
         #convert the processed arrays back to nifti and save to scratch directory. 
-        convert_numpy_to_nifti_and_save(lung_w_vessels,output_path_lung+ f'{patient}',input_path_Dataset+patient)
-        convert_numpy_to_nifti_and_save(lungs_wo_vessels,output_path=output_path_lung_wo_vessel+f'wo_vessels_{patient}',original_nifti_path=input_path_Dataset+patient)
+        convert_numpy_to_nifti_and_save(lung_w_vessels,output_path_lung+ f'{patient_name}.nii.gz',input_path_Dataset+patient)
+        convert_numpy_to_nifti_and_save(lungs_wo_vessels,output_path=output_path_lung_wo_vessel+f'wo_vessels_{patient_name}.nii.gz',original_nifti_path=input_path_Dataset+patient)
 
         np.save(output_path_lung_wov_attenuation+f'attenuation_lung_{patient_name}.npy', attenuation_of_lungs)
         np.save(output_path_lung_wov_attenuation+f'attenuation_no_ves_lung_{patient_name}.npy', attenuation_of_lungs_wo_vessels)
