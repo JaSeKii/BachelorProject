@@ -138,7 +138,6 @@ def segment_lungs_with_vessels(ct_img, total_seg):
     # Preprocess the segmentations to binary in order to multiply them with the ct array.
     lung_seg = np.isin(total_seg,np.array([10,11,12,13,14])).astype(int) #lung segment numbers is  [10:14]
     # multiply the ct image with the lung segmentation, to isolate the lungs
-    #lung_seg = np.where(lung_seg==0,np.nan,1) 
     result_lung = np.where(lung_seg==1,ct_img,-10000)
     # remove all ct values equal to 0
     attenuation = result_lung.ravel()
@@ -163,7 +162,7 @@ def segment_lungs_without_vessels(ct_img, total_seg, vessel_seg):
     result_lung = np.multiply(ct_img,lung_seg)
     result_lung = np.where(np.isnan(result_lung),-10000,result_lung)
 
-    #multiply the isolated lung ct with the lung vessel segmentation to remove the vessels from the ct.
+    # multiply the isolated lung ct with the lung vessel segmentation to remove the vessels from the ct.
     result_lung_no_vessels = np.where(vessel_seg==1,np.multiply(result_lung,vessel_seg),-10000)
 
     # remove all ct values equal to 0

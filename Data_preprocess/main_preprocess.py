@@ -47,18 +47,15 @@ if __name__ == "__main__":
     
     dataset = extract_dataset_from_collection(input_path_whitelist_patients, input_path_Dataset_raw)
 
-    #dataset = [f for f in listdir(input_path_Dataset) if isfile(join(input_path_Dataset, f)) and f in whitelist.values()]
-    #print(dataset)
     #flags
     segmentate = True
     fast = False
     resample = False
+
     if resample: 
         for patient in dataset:
            patient_ct_resampled = resample_image(input_path_Dataset_raw + patient) 
            sitk.WriteImage(patient_ct_resampled,input_path_Dataset_resampled + patient)
-
-    #dataset = ['4_lung_15.nii.gz']
     
     for patient in tqdm(dataset):
         if segmentate:
@@ -73,7 +70,6 @@ if __name__ == "__main__":
             #                     task='pleural_pericard_effusion', fast=fast)
 
         patient_name = patient[14:17]
-        # Get lung segmentation without lung vessels:
 
         # convert nifti files to numpy arrays in order to process them.
         ct_as_np = load_nifti_convert_to_numpy(input_path=input_path_Dataset_resampled+patient)
