@@ -3,12 +3,16 @@ Functions for preprocessing and segmentation nifti images
 '''
 
 import os
-import vtk
+#import vtk
 import numpy as np
 import matplotlib.pyplot as plt
 import SimpleITK as sitk
 import seaborn as sns
 from totalsegmentator.python_api import totalsegmentator
+
+#Function from batchgenerators by Isensee
+def maybe_mkdir_p(directory: str) -> None:
+    os.makedirs(directory, exist_ok=True)
 
 
 def get_segmentations(input_file_path, output_path, task="total", fast=True):
@@ -74,6 +78,10 @@ def load_nifti_convert_to_numpy(input_path, state_shape=False):
     return img_np
 
 def convert_numpy_to_nifti_and_save(np_file, output_path, original_nifti_path):
+    '''
+    input: numpy file, path for nifti file, path to original nifti file (for metadata)
+    Convert a numpy array into a nifti file and save 
+    '''
     img = sitk.ReadImage(original_nifti_path)
     img_o_np = np_file.transpose(2, 1, 0)
 
@@ -99,7 +107,7 @@ def segment_lungs_with_vessels(ct_img, lung_seg):
     result_lung = np.multiply(ct_img,lung_seg)
     return result_lung
 
-def segment_lungs_without_vessels(ct_img, lung_seg, vessel_seg):
+def segment_lungs_without_vessels(ct_img, lung_seg, vessel_seg, Attenuation = True):
     '''
     given the ct image, total segmentation and lung vessel segmentation as arrays:
 
@@ -115,10 +123,11 @@ def segment_lungs_without_vessels(ct_img, lung_seg, vessel_seg):
 
     #multiply the isolated lung ct with the lung vessel segmentation to remove the vessels from the ct.
     result_lung_no_vessels = np.multiply(result_lung,vessel_seg)
-
-    # remove all ct values equal to 0
-    attenuation = result_lung_no_vessels.ravel()
-    attenuation = attenuation[attenuation != 0]
+    attenuation = []
+    if Attenuation:
+        # remove all ct values equal to 0
+        attenuation = result_lung_no_vessels.ravel()
+        attenuation = attenuation[attenuation != 0]
     return result_lung_no_vessels, attenuation
 
 def density_plot(attenuation):
