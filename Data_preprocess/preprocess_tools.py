@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import SimpleITK as sitk
 import seaborn as sns
 import json
+from pathlib import Path
+from glob import glob
 from totalsegmentator.python_api import totalsegmentator
 
 #Function from batchgenerators by Isensee
@@ -99,7 +101,55 @@ def resample_image(im_path : str, interpolator = sitk.sitkLinear, new_spacing = 
                          outputDirection = im.GetDirection(), 
                          defaultPixelValue = 0, 
                          outputPixelType = im.GetPixelID())
+class idxCounter:
+    def __init__(self):
+        '''
+        A simple class that is simply a 3 digit index that increases by one every time step() is called.
+        Used to name data files correctly after nnUNet standards
+        '''
+        self.fdigit = 0
+        self.sdigit = 0
+        self.tdigit = 0
+        
+    def step(self):
+        if self.fdigit == 9:
+            self.sdigit += 1
+            self.fdigit = 0
+        elif self.sdigit == 9 and self.fdigit==9:
+            self.tdigit += 1
+            self.sdigit = 0
+            self.fdigit = 0
+        else: self.fdigit += 1
+    
+    def __repr__(self):
+        return f'{self.tdigit}{self.sdigit}{self.fdigit}'
+        
 
+def covidDatasetResampler(input_path,GT_seg_path, output_path):
+    healthy = glob(os.path.join(input_path,"[0-9][0-9][0-9][0-9].nii.gz"))
+    sick = glob(os.path.join(input_path,"*_[0-9][0-9][0-9]*.nii.gz"))
+    
+    maybe_mkdir_p(output_path)
+    maybe_mkdir_p(GT_seg_path)
+    maybe_mkdir_p(os.path.join(Path(output_path).parent,'GT_segmentations'))
+    idx = idxCounter()
+    
+    if (len(sick) + len(healthy)) > len(os.listdir(output_path)):
+        for patient in sick:
+            p_id = patient.split('/')[-1]
+            resampled_patient = resample_image(patient)
+            resampled_GT_seg = resample_image(GT_seg_path+p_id)
+            sitk.WriteImage(resampled_patient, os.path.join(output_path,f'Covid_sick_{idx}_0000.nii.gz'))
+            sitk.WriteImage(resampled_GT_seg, os.path.join(Path(output_path).parent,'GT_segmentations',f'Covid_sick_GT_{idx}_0000.nii.gz'))
+            idx.step()
+            
+        for patient in healthy:
+            resampled_patient = resample_image(patient)
+            sitk.WriteImage(resampled_patient, os.path.join(output_path,f'Covid_healthy_{idx}_0000.nii.gz'))
+            idx.step()
+
+    new_dataset = glob(os.path.join(output_path,"*.nii.gz"))
+    return new_dataset
 
 
 def load_nifti_convert_to_numpy(input_path, state_shape=False):
@@ -136,7 +186,7 @@ def convert_numpy_to_nifti_and_save(np_file, output_path, original_nifti_path):
     
 
 
-def segment_lungs_with_vessels(ct_img, total_seg):
+def segment_lungs_with_vessels(ct_img, total_seg, Attenuation = False):
     '''
     given the ct image and total segmentation as arrays:
 
@@ -148,8 +198,10 @@ def segment_lungs_with_vessels(ct_img, total_seg):
     # multiply the ct image with the lung segmentation, to isolate the lungs
     result_lung = np.where(lung_seg==1,ct_img,-10000)
     # remove all ct values equal to 0
-    attenuation = result_lung.ravel()
-    attenuation = attenuation[attenuation != -10000]
+    attenuation = []
+    if Attenuation:
+        attenuation = result_lung.ravel()
+        attenuation = attenuation[attenuation != -10000]
     return result_lung, attenuation
 
 def segment_lungs_without_vessels(ct_img, total_seg, vessel_seg, Attenuation = True):
