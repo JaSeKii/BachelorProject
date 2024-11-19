@@ -104,7 +104,7 @@ def resample_image(im_path : str, interpolator = sitk.sitkLinear, new_spacing = 
 class idxCounter:
     def __init__(self):
         '''
-        A simple class that is simply a 3 digit index that increases by one every time step() is called.
+        An object that is simply a 3 digit index that increases by one every time step() is called.
         Used to name data files correctly after nnUNet standards
         '''
         self.fdigit = 0
@@ -140,7 +140,7 @@ def covidDatasetResampler(input_path,GT_seg_path, output_path):
             resampled_patient = resample_image(patient)
             resampled_GT_seg = resample_image(GT_seg_path+p_id)
             sitk.WriteImage(resampled_patient, os.path.join(output_path,f'Covid_sick_{idx}_0000.nii.gz'))
-            sitk.WriteImage(resampled_GT_seg, os.path.join(Path(output_path).parent,'GT_segmentations',f'Covid_sick_GT_{idx}_0000.nii.gz'))
+            sitk.WriteImage(resampled_GT_seg, os.path.join(Path(output_path).parent,'GT_segmentations',f'Covid_sick_GT_{idx}.nii.gz'))
             idx.step()
             
         for patient in healthy:

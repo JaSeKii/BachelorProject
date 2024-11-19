@@ -46,11 +46,7 @@ if __name__ == "__main__":
     maybe_mkdir_p(input_path_Dataset)
     maybe_mkdir_p(input_path_total_segmentations)
     maybe_mkdir_p(output_path_lung)
-    #print(str(Path(input_path_Dataset).parent.resolve()))
-    
-    #print(input_path_Resampled_data)
-    #dataset = [f for f in listdir(input_path_Dataset) if isfile(join(input_path_Dataset, f))]
-    
+   
     if dataset_type == 'Covid':
         if Verbose: print('Resampling and distrbuting raw data from Covid dataset')
         dataset = covidDatasetResampler(input_path_Dataset, input_path_GT_segmentations, output_path_Resampled_data)
@@ -62,13 +58,14 @@ if __name__ == "__main__":
             print('this should not be active!')
             patient_ct_resampled = resample_image(input_path_Dataset + patient) 
             sitk.WriteImage(patient_ct_resampled,input_path_Resampled_data + patient)
-    print(dataset)
     
     for patient in tqdm(dataset):
         p_id = patient.split('/')[-1]
+        
         if Segmentate and not Resample:
             print('this shouldnt happen either')
             input_path_Resampled_data = input_path_Dataset
+            
         if Segmentate and Total:
             get_segmentations(input_file_path=input_path_Resampled_data + p_id,
                                 output_path=output_path_total_segmentations + f'LungSEG_{p_id}',
@@ -81,7 +78,6 @@ if __name__ == "__main__":
             get_segmentations(input_file_path=input_path_Resampled_data + p_id,
                                 output_path=output_path_total_segmentations + f'pleural_effusion_seg_{p_id}',
                                 task='pleural_pericard_effusion', fast=Fast)
-        print(p_id)
         
         # Get lung segmentation without lung vessels:
 
