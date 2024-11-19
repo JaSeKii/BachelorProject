@@ -5,9 +5,10 @@
 # #import SimpleITK as sitk
 from os import listdir
 from os.path import isfile, join
+import json
+from tqdm import tqdm
 from pathlib import Path
 import seaborn as sns
-import tempfile
 import matplotlib.pyplot as plt
 from preprocess_tools import *
 
@@ -19,6 +20,14 @@ input_path_Dataset = '/scratch/s214596/Preprocess_dataset/CovidDataset/raw_CT_da
 
 input_path_CT = str(Path(input_path_Dataset).resolve()) + "/"
 input_path_segmentations = str(Path(input_path_Dataset).parent.resolve()) + "/Segmentations/"
+cluster = 'Rigshospitalet' # 'Rigshospitalet', 'local' , 'Titans'
+
+
+
+if cluster == 'Titans':
+    #input paths
+    input_path_Dataset = '/scratch/s214596/Dataset/raw_data'
+    input_path_segmentations = str(Path(__file__).parent.resolve()) + "/Segmentations/"
 
 #outout paths
 output_path_segmentations = str(Path(input_path_Dataset).parent.resolve()) + "/Segmentations/"
@@ -42,6 +51,18 @@ if __name__ == "__main__":
     
     dataset = [f for f in listdir(input_path_Dataset) if isfile(join(input_path_Dataset, f))]
     
+    dataset = extract_dataset_from_collection(input_path_whitelist_patients, input_path_Dataset_raw)
+
+    #flags
+    segmentate = True
+    fast = False
+    resample = False
+
+    if resample: 
+        for patient in dataset:
+           patient_ct_resampled = resample_image(input_path_Dataset_raw + patient) 
+           sitk.WriteImage(patient_ct_resampled,input_path_Dataset_resampled + patient)
+    
     for patient in dataset:
         if Segmentate and Total:
             get_segmentations(input_file_path=input_path_CT + patient,
@@ -56,6 +77,17 @@ if __name__ == "__main__":
                                 output_path=output_path_segmentations + f'pleural_effusion_seg_{patient}',
                                 task='pleural_pericard_effusion', fast=Fast)
         print(patient)
+    for patient in tqdm(dataset):
+        if segmentate:
+            get_segmentations(input_file_path=input_path_Dataset_resampled + patient,
+                                output_path=output_path_segmentations + f'totalSeg_{patient}',
+                                task='total', fast=fast)
+            # get_segmentations(input_file_path=input_path_Dataset_resampled + patient,
+            #                     output_path=output_path_segmentations + f'vessel_seg_{patient}',
+            #                     task='lung_vessels', fast=fast)
+            # get_segmentations(input_file_path=input_path_Dataset + patient,
+            #                     output_path=output_path_segmentations + f'pleural_effusion_seg_{patient}',
+            #                     task='pleural_pericard_effusion', fast=fast)
 
         # Get lung segmentation without lung vessels:
 

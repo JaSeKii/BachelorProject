@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import SimpleITK as sitk
 import seaborn as sns
+import json
 from totalsegmentator.python_api import totalsegmentator
 
 #Function from batchgenerators by Isensee
@@ -19,9 +20,9 @@ def get_segmentations(input_file_path, output_path, task="total", fast=True):
     '''
     Get segmentations using TotalSegmentator.
 
-    input: path to input nifti file
+    input: path to input nifti file, path to folder for segmentations
 
-    output: path to folder for segmentations
+    output: 
 
     task: what type of segmentation (total, lung_vessels, ...) see documentation on github
     '''
@@ -61,8 +62,45 @@ def get_segmentations(input_file_path, output_path, task="total", fast=True):
                      fast_model, nora_tag="None", preview=False, task=task, roi_subset=None,
                      statistics=calc_statistics, radiomics=calc_radiomics, crop_path=None, body_seg=body_seg,
                      force_split=force_split, output_type="nifti", quiet=run_quit, verbose=verbose, test=False)
-
     return True
+
+def resample_image(im_path : str, interpolator = sitk.sitkLinear, new_spacing = [0.5]*3) -> sitk.Image:
+
+    """
+    The function reads and resamples an image to have a given voxel. 
+
+    Input: 
+
+        im_path:        The path to the image that needs resampling 
+
+        intepolator:    The intepolator for the resampling, default is linear
+
+        new_spacing:    The new voxel, default is (0.5, 0.5, 0.5)
+
+    Output: 
+
+        A resampled image represented as a 3D array
+
+    """
+
+    # load image 
+    im = sitk.ReadImage(im_path) 
+
+    # calculate new size of resampled image 
+    original_spacing = im.GetSpacing()
+    original_size = im.GetSize()
+    new_size = [int(round(osz*ospc/nspc)) for osz,ospc,nspc in zip(original_size, original_spacing, new_spacing)]
+    # resample 
+    return sitk.Resample(im, new_size, 
+                         transform = sitk.Transform(), 
+                         interpolator = interpolator, 
+                         outputOrigin = im.GetOrigin(), 
+                         outputSpacing = new_spacing, 
+                         outputDirection = im.GetDirection(), 
+                         defaultPixelValue = 0, 
+                         outputPixelType = im.GetPixelID())
+
+
 
 def load_nifti_convert_to_numpy(input_path, state_shape=False):
     '''
@@ -70,12 +108,15 @@ def load_nifti_convert_to_numpy(input_path, state_shape=False):
 
     output: numpy array of image
     '''
+    
     img = sitk.ReadImage(input_path)
     img_t = sitk.GetArrayFromImage(img)
     img_np = img_t.transpose(2, 1, 0)
     if state_shape:
         print(f"Numpy image shape {img_np.shape}")
     return img_np
+
+
 
 def convert_numpy_to_nifti_and_save(np_file, output_path, original_nifti_path):
     '''
@@ -91,8 +132,11 @@ def convert_numpy_to_nifti_and_save(np_file, output_path, original_nifti_path):
 
     print(f"saving")
     sitk.WriteImage(img_o, output_path)
+
     
-def segment_lungs_with_vessels(ct_img, lung_seg):
+
+
+def segment_lungs_with_vessels(ct_img, total_seg):
     '''
     given the ct image and total segmentation as arrays:
 
@@ -100,14 +144,15 @@ def segment_lungs_with_vessels(ct_img, lung_seg):
     '''
 
     # Preprocess the segmentations to binary in order to multiply them with the ct array.
-    lung_seg = np.isin(lung_seg,np.array([10,11,12,13,14])).astype(int) #lung segment numbers is  [10:14]
-    vessel_seg = np.where(vessel_seg > 0,0,1)
-
+    lung_seg = np.isin(total_seg,np.array([10,11,12,13,14])).astype(int) #lung segment numbers is  [10:14]
     # multiply the ct image with the lung segmentation, to isolate the lungs
-    result_lung = np.multiply(ct_img,lung_seg)
-    return result_lung
+    result_lung = np.where(lung_seg==1,ct_img,-10000)
+    # remove all ct values equal to 0
+    attenuation = result_lung.ravel()
+    attenuation = attenuation[attenuation != -10000]
+    return result_lung, attenuation
 
-def segment_lungs_without_vessels(ct_img, lung_seg, vessel_seg, Attenuation = True):
+def segment_lungs_without_vessels(ct_img, total_seg, vessel_seg, Attenuation = True):
     '''
     given the ct image, total segmentation and lung vessel segmentation as arrays:
 
@@ -115,25 +160,40 @@ def segment_lungs_without_vessels(ct_img, lung_seg, vessel_seg, Attenuation = Tr
     '''
 
     # Preprocess the segmentations to binary in order to multiply them with the ct array.
-    lung_seg = np.isin(lung_seg,np.array([10,11,12,13,14])).astype(int) #lung segment numbers is  [10:14]
+    lung_seg = np.isin(total_seg,np.array([10,11,12,13,14])).astype(int) #lung segment numbers is  [10:14]
     vessel_seg = np.where(vessel_seg > 0,0,1)
 
     # multiply the ct image with the lung segmentation, to isolate the lungs
+    lung_seg = np.where(lung_seg==0,np.nan,1) 
     result_lung = np.multiply(ct_img,lung_seg)
+    result_lung = np.where(np.isnan(result_lung),-10000,result_lung)
 
-    #multiply the isolated lung ct with the lung vessel segmentation to remove the vessels from the ct.
-    result_lung_no_vessels = np.multiply(result_lung,vessel_seg)
-    attenuation = []
-    if Attenuation:
-        # remove all ct values equal to 0
-        attenuation = result_lung_no_vessels.ravel()
-        attenuation = attenuation[attenuation != 0]
+    # multiply the isolated lung ct with the lung vessel segmentation to remove the vessels from the ct.
+    result_lung_no_vessels = np.where(vessel_seg==1,np.multiply(result_lung,vessel_seg),-10000)
+
+    # remove all ct values equal to 0
+    attenuation = result_lung_no_vessels.ravel()
+    attenuation = attenuation[attenuation != -10000]
     return result_lung_no_vessels, attenuation
 
-def density_plot(attenuation):
-    sns.set_style('whitegrid')
-    sns.displot(attenuation)
-    plt.show()
+
+
+def extract_dataset_from_collection(whitelist_file_path, path_to_dataset):
+    '''
+    given a path to a json file containing the relevant nifti filenames, and a path to the raw dataset
+
+    extract filenames of the whitelisted nifti files from the dataset
+    '''
+    filtered_dataset = []
+    with open(whitelist_file_path, 'r') as json_file:
+        whitelist = json.load(json_file)
+    whitelist_filenames = [fn['filepath'] for fn in whitelist.values()]
+    for patient_id in os.listdir(path_to_dataset):
+        if patient_id[0:28] in whitelist_filenames and os.path.isfile(os.path.join(path_to_dataset, patient_id)):
+            filtered_dataset.append(patient_id[0:28] + '.nii.gz')
+    return filtered_dataset
+
+
 
 if __name__ == "__main__":
     #compute_totalsegmentator_segmentations()

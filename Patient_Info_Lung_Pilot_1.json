@@ -1,0 +1,143 @@
+{
+    "patient_0000": {
+        "filepath": "Lung-Pilot-1_0000_SERIES0020",
+        "label": "Sick",
+        "description": ""
+    },
+    "patient_0001": {
+        "filepath": "Lung-Pilot-1_0001_SERIES0021",
+        "label": "Sick",
+        "description": ""
+    },
+    "patient_0002": {
+        "filepath": "Lung-Pilot-1_0002_SERIES0024",
+        "label": "Sick",
+        "description": ""
+    },
+    "patient_0003": {
+        "filepath": "Lung-Pilot-1_0003_SERIES0018",
+        "label": "Sick",
+        "description": ""
+    },
+    "patient_0004": {
+        "filepath": "Lung-Pilot-1_0004_SERIES0020",
+        "label": "Sick",
+        "description": ""
+    },
+    "patient_0005": {
+        "filepath": "Lung-Pilot-1_0005_SERIES0022",
+        "label": "Sick",
+        "description": ""
+    },
+    "patient_0006": {
+        "filepath": "Lung-Pilot-1_0006_SERIES0020",
+        "label": "Sick",
+        "description": ""
+    },
+    "patient_0007": {
+        "filepath": "Lung-Pilot-1_0007_SERIES0020",
+        "label": "Sick",
+        "description": ""
+    },
+    "patient_0008": {
+        "filepath": "Lung-Pilot-1_0008_SERIES0017",
+        "label": "Sick",
+        "description": ""
+    },
+    "patient_0009": {
+        "filepath": "Lung-Pilot-1_0009_SERIES0023",
+        "label": "Sick",
+        "description": ""
+    },
+    "patient_0010": {
+        "filepath": "Lung-Pilot-1_0010_SERIES0019",
+        "label": "Sick",
+        "description": ""
+    },
+    "patient_0011": {
+        "filepath": "Lung-Pilot-1_0011_SERIES0022",
+        "label": "Sick",
+        "description": ""
+    },
+    "patient_0012": {
+        "filepath": "Lung-Pilot-1_0012_SERIES0024",
+        "label": "Sick",
+        "description": ""
+    },
+    "patient_0013": {
+        "filepath": "Lung-Pilot-1_0013_SERIES0020",
+        "label": "Sick",
+        "description": ""
+    },
+    "patient_0014": {
+        "filepath": "Lung-Pilot-1_0014_SERIES0021",
+        "label": "Healthy",
+        "description": "None"
+    },
+    "patient_0015": {
+        "filepath": "None",
+        "label": "Healthy",
+        "description": "None"
+    },
+    "patient_0016": {
+        "filepath": "None",
+        "label": "Healthy",
+        "description": "None"
+    },
+    "patient_0017": {
+        "filepath": "None",
+        "label": "Healthy",
+        "description": "None"
+    },
+    "patient_0018": {
+        "filepath": "Lung-Pilot-1_0018_SERIES0019",
+        "label": "Healthy",
+        "description": "None"
+    },
+    "patient_0019": {
+        "filepath": "Lung-Pilot-1_0019_SERIES0020",
+        "label": "Healthy",
+        "description": "None"
+    },
+    "patient_0020": {
+        "filepath": "Lung-Pilot-1_0020_SERIES0035",
+        "label": "Healthy",
+        "description": "None"
+    },
+    "patient_0021": {
+        "filepath": "Lung-Pilot-1_0021_SERIES0020",
+        "label": "Healthy",
+        "description": "None"
+    },
+    "patient_0022": {
+        "filepath": "Lung-Pilot-1_0022_SERIES0019",
+        "label": "Healthy",
+        "description": "None"
+    },
+    "patient_0023": {
+        "filepath": "Lung-Pilot-1_0023_SERIES0019",
+        "label": "Healthy",
+        "description": "None"
+    },
+    "patient_0024": {
+        "filepath": "Lung-Pilot-1_0024_SERIES0031",
+        "label": "Healthy",
+        "description": "None"
+    },
+    "patient_0025": {
+        "filepath": "Lung-Pilot-1_0025_SERIES0020",
+        "label": "Healthy",
+        "description": "None"
+    },
+    "patient_0026": {
+        "filepath": "Lung-Pilot-1_0026_SERIES0019",
+        "label": "Healthy",
+        "description": "None"
+    },
+    "patient_0027": {
+        "filepath": "Lung-Pilot-1_0027_SERIES0020",
+        "label": "Healthy",
+        "description": "None"
+    }
+    
+}
