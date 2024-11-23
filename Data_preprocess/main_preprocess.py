@@ -32,12 +32,14 @@ if cluster == 'Titans':
     input_path_GT_segmentations = str(Path(input_path_Dataset).resolve()) + "/_GT_raw/"
     input_path_total_segmentations = str(Path(input_path_Dataset).parent.resolve()) + "/Segmentations/"
     input_path_Resampled_data = str(Path(input_path_Dataset).parent.resolve()) + "/Resampled_data/"
+    input_path_resampled_GT = str(Path(input_path_Dataset).parent.resolve()) + "/Resampled_GT_data/"
 
 #outout paths
 output_path_Resampled_data = input_path_Resampled_data
 output_path_total_segmentations = input_path_total_segmentations
 output_path_lung_wo_vessel = str(Path(input_path_Dataset).parent.resolve()) + '/processed_data/lung_wo_vessels/'
 output_path_lung = str(Path(input_path_Dataset).parent.resolve()) + '/processed_data/lungs/'
+output_path_lung_GT = str(Path(input_path_Dataset).parent.resolve()) + '/processed_data/lungs_GT/'
 output_path_lung_wov_attenuation = str(Path(input_path_Dataset).parent.resolve()) + "/Attenuation/"
 
 
@@ -46,10 +48,12 @@ if __name__ == "__main__":
     maybe_mkdir_p(input_path_Dataset)
     maybe_mkdir_p(input_path_total_segmentations)
     maybe_mkdir_p(output_path_lung)
+    maybe_mkdir_p(input_path_resampled_GT)
+    maybe_mkdir_p(output_path_lung_GT)
    
     if dataset_type == 'Covid':
         if Verbose: print('Resampling and distrbuting raw data from Covid dataset')
-        dataset = covidDatasetResampler(input_path_Dataset, input_path_GT_segmentations, output_path_Resampled_data)
+        dataset = covidDatasetResampler(input_path_Dataset, input_path_GT_segmentations, output_path_Resampled_data, input_path_resampled_GT)
         if Verbose: print('Resampling complete')
     #dataset = extract_dataset_from_collection(input_path_json, input_path_Dataset)
 
@@ -66,7 +70,9 @@ if __name__ == "__main__":
             print('this shouldnt happen either')
             input_path_Resampled_data = input_path_Dataset
             
-        if Segmentate and Total:
+        if Segmentate and Total and len(os.listdir(input_path_total_segmentations)) < len(dataset):
+            if f'LungSEG_{p_id}' in output_path_total_segmentations:
+                continue
             get_segmentations(input_file_path=input_path_Resampled_data + p_id,
                                 output_path=output_path_total_segmentations + f'LungSEG_{p_id}',
                                 task='total', fast=Fast)
@@ -86,15 +92,33 @@ if __name__ == "__main__":
         
         if Total:
             lung_seg_as_np = load_nifti_convert_to_numpy(input_path=output_path_total_segmentations+f'LungSEG_{p_id}')
+            if 'sick' in p_id:
+                x = ''.join(p_id.split('_0000'))
+                GT_lung_seg_as_np = load_nifti_convert_to_numpy(input_path=input_path_resampled_GT+x)
+            else: GT_lung_seg_as_np = []
         if Vessel:
             vessel_seg_as_np = load_nifti_convert_to_numpy(input_path=input_path_total_segmentations+f'vessel_seg_{p_id}')
         
         
         # extract CT of the lungs with lung vessels and resample.
         lung_w_vessels, attenuation = segment_lungs_with_vessels(ct_as_np, lung_seg_as_np)
-        #convert the processed arrays back to nifti and save to scratch directory. 
-        convert_numpy_to_nifti_and_save(lung_w_vessels,output_path_lung+ f'Lung_{p_id}',input_path_Resampled_data+p_id)
         
+        # Extract GT segmentations in nnUNet applicable format
+        Lung_GT_seg = segment_lung_with_GT_from_Total_seg(lung_seg_as_np, GT_lung_seg_as_np, False if not 'sick' in p_id else True)
+         
+         
+        print(np.max(Lung_GT_seg))
+        #convert the processed arrays back to nifti and save to scratch directory. 
+        convert_numpy_to_nifti_and_save(lung_w_vessels,
+                                        output_path_lung+ f'Lung_{p_id}',
+                                        input_path_Resampled_data+p_id
+                                        )
+        # save the GT segmentation as nifti file
+        x = ''.join(p_id.split('_0000'))
+        convert_numpy_to_nifti_and_save(Lung_GT_seg, 
+                                        output_path_lung_GT+f'Lung_{x}.nii.gz', 
+                                        output_path_total_segmentations+f'LungSEG_{p_id}'
+                                        )
         
         
         if Vessel and Attenuation:

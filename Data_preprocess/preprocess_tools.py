@@ -125,12 +125,12 @@ class idxCounter:
         return f'{self.tdigit}{self.sdigit}{self.fdigit}'
         
 
-def covidDatasetResampler(input_path,GT_seg_path, output_path):
+def covidDatasetResampler(input_path,input_GT_seg_path, output_path,output_path_GT):
     healthy = glob(os.path.join(input_path,"[0-9][0-9][0-9][0-9].nii.gz"))
     sick = glob(os.path.join(input_path,"*_[0-9][0-9][0-9]*.nii.gz"))
     
     maybe_mkdir_p(output_path)
-    maybe_mkdir_p(GT_seg_path)
+    maybe_mkdir_p(input_GT_seg_path)
     maybe_mkdir_p(os.path.join(Path(output_path).parent,'GT_segmentations'))
     idx = idxCounter()
     
@@ -138,9 +138,10 @@ def covidDatasetResampler(input_path,GT_seg_path, output_path):
         for patient in sick:
             p_id = patient.split('/')[-1]
             resampled_patient = resample_image(patient)
-            resampled_GT_seg = resample_image(GT_seg_path+p_id)
+            resampled_GT_seg = resample_image(input_GT_seg_path+p_id)
+            print(input_GT_seg_path+p_id)
             sitk.WriteImage(resampled_patient, os.path.join(output_path,f'Covid_sick_{idx}_0000.nii.gz'))
-            sitk.WriteImage(resampled_GT_seg, os.path.join(Path(output_path).parent,'GT_segmentations',f'Covid_sick_GT_{idx}.nii.gz'))
+            sitk.WriteImage(resampled_GT_seg, output_path_GT+f'Covid_sick_{idx}.nii.gz')
             idx.step()
             
         for patient in healthy:
@@ -192,17 +193,27 @@ def segment_lungs_with_vessels(ct_img, total_seg, Attenuation = False):
 
     output: array of lungs with vessels 
     '''
-
     # Preprocess the segmentations to binary in order to multiply them with the ct array.
     lung_seg = np.isin(total_seg,np.array([10,11,12,13,14])).astype(int) #lung segment numbers is  [10:14]
     # multiply the ct image with the lung segmentation, to isolate the lungs
     result_lung = np.where(lung_seg==1,ct_img,-10000)
     # remove all ct values equal to 0
+    
     attenuation = []
     if Attenuation:
         attenuation = result_lung.ravel()
         attenuation = attenuation[attenuation != -10000]
     return result_lung, attenuation
+
+
+def segment_lung_with_GT_from_Total_seg(total_seg, GT_seg, Has_GT=True):
+    lung_seg = np.isin(total_seg,np.array([10,11,12,13,14])).astype(int)
+    if Has_GT:
+        GT_seg = np.where(GT_seg>0,2,0)
+        lung_with_GT_seg = np.where(GT_seg>0,GT_seg,lung_seg)
+        return lung_with_GT_seg
+    return lung_seg
+
 
 def segment_lungs_without_vessels(ct_img, total_seg, vessel_seg, Attenuation = True):
     '''
