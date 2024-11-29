@@ -3,6 +3,14 @@ import matplotlib.pyplot as plt
 from scipy import stats
 from sklearn.mixture import GaussianMixture
 
+# Function to randomly sample a subset of attenuation values for each subject (row)
+def sample_attenuation(attenuation_list, sample_size=1000):
+    """Randomly sample a subset from the attenuation list for each subject."""
+    if len(attenuation_list) > sample_size:
+        return np.random.choice(attenuation_list, sample_size, replace=False)
+    else:
+        return attenuation_list
+
 
 def transform_data(data, lamb=0.5, e=1e-6):
     translated_data = data + 1050 + e #make all values positive
