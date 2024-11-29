@@ -1,11 +1,6 @@
-"# BachelorProject" 
-
-This Github contains several exploratory studies as part of the preliminary part of the bachelor project. In 'DataPreprocess' you find the scripts for preprocessing the data and extracting cropped CT data sets. In 'PreliminaryStudies' you find notebooks for the preliminary studies regarding attenuation densities, gaussian mixture models (GMM), and pleural effusion.
-
-
 # BachelorProject
 
-Welcome to the repository for **BachelorProject**! This repository contains exploratory studies and tools developed as part of the preliminary phase of a bachelor project. Below, you will find an overview of the repository structure and a description of its key components.
+Welcome to the repository for **BachelorProject**! This repository contains several exploratory studies as part of the preliminary part of the bachelor project. In 'DataPreprocess' you find the scripts for preprocessing the data and extracting cropped CT data sets. In 'PreliminaryStudies' you find notebooks for the preliminary studies regarding attenuation densities, gaussian mixture models (GMM), and pleural effusion.
 
 ## Repository Structure
 
