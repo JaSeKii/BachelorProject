@@ -2,11 +2,11 @@ import json
 import os
 import pathlib
 
-def extract_summary_data(path_to_summary):
+def extract_dice(path_to_summary):
     '''
-    given a path to a json file containing the relevant nifti filenames, and a path to the raw dataset
-
-    extract filenames of the whitelisted nifti files from the dataset
+    Given a path to a nnUNet summary.json file
+    
+    output the average dice score for segment 2 (GGO) for the first 14 cases (all sick in LP1)
     '''
     dice_sick_avg = []
     with open(path_to_summary, 'r') as json_file:
@@ -17,5 +17,5 @@ def extract_summary_data(path_to_summary):
     
     
 summary_path = os.path.join(pathlib.Path.cwd().resolve(), 'summary.json')
-avg_dice = extract_summary_data(summary_path)
+avg_dice = extract_dice(summary_path)
 print(avg_dice)
