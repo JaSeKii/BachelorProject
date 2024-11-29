@@ -163,4 +163,4 @@ def filter_low_density_data(data, density_threshold=0.0005):
     return filtered_data
 
 def get_hpdr(arr, hpdr_low=-720, hpdr_high=-300):
-    return sum((arr >= hpdr_low) & (arr <= hpdr_high)) / len(arr)
+    return sum((arr >= hpdr_low) & (arr <= hpdr_high)) / len(arr) * 100
