@@ -10,6 +10,20 @@ def sample_attenuation(attenuation_list, sample_size=1000):
         return np.random.choice(attenuation_list, sample_size, replace=False)
     else:
         return attenuation_list
+    
+
+def bootstrap_diff_in_means(group_1, group_2, n_iterations=10000):
+    """Bootstrap resampling to calculate the distribution of the difference in means."""
+    diff_means = []
+    for _ in range(n_iterations):
+        # Resample with replacement
+        sample_1 = np.random.choice(group_1, size=len(group_1), replace=True)
+        sample_2 = np.random.choice(group_2, size=len(group_2), replace=True)
+        
+        # Compute the difference in means
+        diff_means.append(np.mean(sample_1) - np.mean(sample_2))
+    
+    return np.array(diff_means)
 
 
 def transform_data(data, lamb=0.5, e=1e-6):

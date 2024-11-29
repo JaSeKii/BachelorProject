@@ -125,15 +125,51 @@ if __name__ == '__main__':
     # df = pd.DataFrame(data_lung)
 
     # # Plotting the boxplots
-    plt.figure(figsize=(12, 6))  # Set the figure size
-    sns.boxplot(data=sorted_data)
-    sns.despine(offset=10, trim=True)
-    plt.ylabel('GGO in Lungs (%)')
-    plt.axvline(x=1.5, color='red', linestyle='--', linewidth=1)
-    plt.title("Ratio of GGO in lungs in (%) of total volume")
-    plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
+    # plt.figure(figsize=(12, 6))  # Set the figure size
+    # sns.boxplot(data=sorted_data)
+    # sns.despine(offset=10, trim=True)
+    # plt.ylabel('GGO in Lungs (%)')
+    # plt.axvline(x=1.5, color='red', linestyle='--', linewidth=1)
+    # plt.title("Ratio of GGO in lungs in (%) of total volume")
+    # plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
 
+    # plt.tight_layout()
+    # plt.savefig('boxplots')
+
+    # Setting up the figure and axes
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6), sharey=True)
+
+    # Sick plot
+    sns.boxplot(
+        data=df[["sick_GT", "sick_model"]],
+        ax=axes[0],
+        palette=["red", "red"]  # Specify colors for each box
+    )
+    axes[0].set_title("Lungs with GGO")
+    axes[0].set_ylabel("GGO in Lungs (%)")
+    axes[0].axhline(y=0, color='gray', linestyle='--', linewidth=1)
+    axes[0].set_xticks([0, 1])  # Explicitly set tick positions
+    axes[0].set_xticklabels(["Ground Truth", "Prediction"])  # Assign labels
+    sns.despine(ax=axes[0], offset=10, trim=True)
+
+    # Healthy plot
+    sns.boxplot(
+        data=df[["healthy_GT", "healthy_model"]],
+        ax=axes[1],
+        palette=["limegreen", "limegreen"]  # Specify colors for each box
+    )
+    axes[1].set_title("Lungs without GGO")
+    axes[1].set_ylabel("GGO in Lungs (%)")
+    axes[1].axhline(y=0, color='gray', linestyle='--', linewidth=1)
+    axes[1].set_xticks([0, 1])  # Explicitly set tick positions
+    axes[1].set_xticklabels(["Ground Truth", "Prediction"])  # Assign labels
+    sns.despine(ax=axes[1], offset=10, trim=True)
+
+    # Final adjustments
+    fig.suptitle("Comparison of GGO % in Lungs With and Without GGO for XXXXXX data", fontsize=16)
     plt.tight_layout()
-    plt.savefig('boxplots')
+    plt.savefig("boxplots.png")
+    plt.show()
+
 
         
