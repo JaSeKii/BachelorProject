@@ -70,17 +70,29 @@ def load_json(path):
     with open(path, 'r') as json_file:
         return json.load(json_file)
         
+def pad_dict_list(dict_list, padel):
+    lmax = 0
+    for lname in dict_list.keys():
+        lmax = max(lmax, len(dict_list[lname]))
+    for lname in dict_list.keys():
+        ll = len(dict_list[lname])
+        if  ll < lmax:
+            dict_list[lname] += [padel] * (lmax - ll)
+    return dict_list        
+        
 def sort_result_dict(res_dict):
     hm,hgt,sm,sgt = {},{},{},{}
+    threshold = 10 if len(res_dict)==16 else 14
     for p in res_dict.keys():
-        if int(p)>=10:
+        if int(p)>=threshold:
             hm[p]=res_dict[p][1]
             hgt[p]=res_dict[p][0]
-        elif int(p)<10:
+        elif int(p)<threshold:
             sgt[p]=res_dict[p][0]
             sm[p]=res_dict[p][1]
-    df = pd.DataFrame({'healthy_model':hm.values(),'healthy_GT':hgt.values(),'sick_model':sm.values(),'sick_GT':sgt.values()})
-    return df
+    df_sick = pd.DataFrame({'sick_model':sm.values(),'sick_GT':sgt.values()})
+    df_healthy = pd.DataFrame({'healthy_model':hm.values(),'healthy_GT':hgt.values()})
+    return df_sick, df_healthy
             
 
    
@@ -111,8 +123,8 @@ if __name__ == '__main__':
     #     print(f'The GGO percentage for the GT of patient {p} is: {[GT/lung_vol*100 if GT>1 else 0][0]} The PRED is {PRED/lung_vol*100}')
         
     # write_to_json(res_dict)
-    res_dict = load_json('GGO_percents_covid')
-    sorted_data = sort_result_dict(res_dict)
+    res_dict = load_json('GGO_percents')
+    sick, healthy = sort_result_dict(res_dict)
     
     # # Define the DataFrame
     # data_lung = {
@@ -135,13 +147,12 @@ if __name__ == '__main__':
 
     # plt.tight_layout()
     # plt.savefig('boxplots')
-
     # Setting up the figure and axes
     fig, axes = plt.subplots(1, 2, figsize=(12, 6), sharey=True)
 
     # Sick plot
     sns.boxplot(
-        data=df[["sick_GT", "sick_model"]],
+        data=sick[["sick_GT", "sick_model"]],
         ax=axes[0],
         palette=["red", "red"]  # Specify colors for each box
     )
@@ -154,7 +165,7 @@ if __name__ == '__main__':
 
     # Healthy plot
     sns.boxplot(
-        data=df[["healthy_GT", "healthy_model"]],
+        data=healthy[["healthy_GT", "healthy_model"]],
         ax=axes[1],
         palette=["limegreen", "limegreen"]  # Specify colors for each box
     )
@@ -166,7 +177,7 @@ if __name__ == '__main__':
     sns.despine(ax=axes[1], offset=10, trim=True)
 
     # Final adjustments
-    fig.suptitle("Comparison of GGO % in Lungs With and Without GGO for XXXXXX data", fontsize=16)
+    fig.suptitle("Comparison of GGO % in Lungs With and Without GGO for Lung Pilot data", fontsize=16)
     plt.tight_layout()
     plt.savefig("boxplots.png")
     plt.show()
