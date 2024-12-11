@@ -1,6 +1,6 @@
 # BachelorProject
 
-This repository serves as one of the main resources for the bachelor project conducted as part of the Bachelor Thesis titled “AI-driven Lung Analysis for Cardiovascular Disease Detection”, submitted to DTU Compute, Department of Applied Mathematics and Computer Science on December 13th 2024.
+This repository serves as one of the main resources for the Bachelor Thesis titled “AI-driven Lung Analysis for Cardiovascular Disease Detection”, submitted to DTU Compute, Department of Applied Mathematics and Computer Science on December 13th 2024.
 
 Contributors:
 	•	Karoline Klan Hansen (s214638)
